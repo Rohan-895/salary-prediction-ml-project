@@ -1,4 +1,3 @@
-# Complete Employee Salary Prediction Model Training Script
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
@@ -13,7 +12,7 @@ warnings.filterwarnings('ignore')
 
 print("Loading and preprocessing data...")
 
-# 1. Load data
+
 try:
     df = pd.read_csv("dataset.csv")
     print(f"Dataset loaded successfully. Shape: {df.shape}")
@@ -21,35 +20,33 @@ except FileNotFoundError:
     print("Error: 'dataset.csv' not found in current directory!")
     exit()
 
-# 2. Display column names and basic info
+
 print("\nColumns in dataset:")
 print(df.columns.tolist())
 print("\nFirst few rows:")
 print(df.head())
 
-# 3. Remove unwanted columns (as per your requirements)
 columns_to_remove = ['fnlwgt', 'race', 'capital-gain', 'capital-loss']
 for col in columns_to_remove:
     if col in df.columns:
         df = df.drop(col, axis=1)
         print(f"Dropped '{col}' column")
 
-# 4. Handle missing values and clean data
 df = df.replace(' ?', np.nan)
 df = df.replace('?', np.nan)
 
-# Remove leading/trailing spaces from string columns
+
 for col in df.select_dtypes(include=['object']).columns:
     df[col] = df[col].str.strip()
 
 print(f"\nMissing values per column:\n{df.isnull().sum()}")
 
-# Drop rows with missing values
+
 initial_rows = len(df)
 df = df.dropna()
 print(f"Dropped {initial_rows - len(df)} rows with missing values. Remaining: {len(df)}")
 
-# 5. Simplify marital status to 3 categories (as per your requirements)
+
 if 'marital-status' in df.columns:
     def simplify_marital_status(status):
         if 'Married' in str(status):
@@ -62,10 +59,10 @@ if 'marital-status' in df.columns:
     df['marital-status'] = df['marital-status'].apply(simplify_marital_status)
     print(f"Simplified marital status categories: {df['marital-status'].unique()}")
 
-# 6. Check unique values in income column
+
 print(f"\nUnique values in income column: {df['income'].unique()}")
 
-# 7. Remove outliers from numerical columns
+
 def remove_outliers(df, cols):
     """Remove outliers using IQR method"""
     for col in cols:
@@ -80,7 +77,7 @@ def remove_outliers(df, cols):
             print(f"Removed {before_count - len(df)} outliers from '{col}'. Remaining: {len(df)}")
     return df
 
-# Remove outliers from remaining numerical columns
+
 numerical_cols = ['age', 'hours-per-week', 'educational-num']
 existing_numerical_cols = [col for col in numerical_cols if col in df.columns]
 print(f"\nRemoving outliers from: {existing_numerical_cols}")
@@ -88,27 +85,27 @@ df = remove_outliers(df, existing_numerical_cols)
 
 print(f"Final dataset shape after cleaning: {df.shape}")
 
-# 8. Prepare features and target
+
 X = df.drop('income', axis=1)
 y = df['income']
 
 print(f"\nTarget variable distribution:")
 print(y.value_counts())
 
-# 9. Identify categorical and numerical columns
+
 categorical_cols = X.select_dtypes(include=['object']).columns.tolist()
 numerical_cols = X.select_dtypes(include=['int64', 'float64']).columns.tolist()
 
 print(f"\nCategorical columns: {categorical_cols}")
 print(f"Numerical columns: {numerical_cols}")
 
-# 10. Create preprocessing pipeline
+
 preprocessor = ColumnTransformer([
     ('cat', OneHotEncoder(handle_unknown='ignore', drop='first'), categorical_cols),
     ('num', 'passthrough', numerical_cols)
 ])
 
-# 11. Train CLASSIFICATION model
+
 print("\n=== Training Classification Model ===")
 
 le = LabelEncoder()
@@ -135,9 +132,9 @@ print("\n=== Training Regression Model for Salary Estimation ===")
 def income_to_salary(income_str):
     """Convert income category to estimated salary value"""
     if '<=50K' in str(income_str) or ' <=50K' in str(income_str):
-        return 35000  # Average for <=50K category
+        return 35000  
     else:
-        return 75000  # Average for >50K category
+        return 75000  
 
 y_salary = df['income'].apply(income_to_salary)
 print(f"Salary target distribution:")
@@ -157,7 +154,7 @@ rmse = np.sqrt(mean_squared_error(y_test_reg, y_pred_reg))
 print(f"Regression MAE: {mae:.2f}")
 print(f"Regression RMSE: {rmse:.2f}")
 
-# 13. Save models and metadata
+
 print("\n=== Saving Models ===")
 
 joblib.dump(clf_model, "salary_classification_model.pkl")
